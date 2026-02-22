@@ -4,12 +4,16 @@ import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import * as THREE from 'three'
 
+const MODEL_URL = window.location.hostname === 'localhost'
+  ? '/model.glb'
+  : '/jacopo-manenti/model.glb'
+
 interface ModelProps {
   isTalking?: boolean
 }
 
 export function Model({ isTalking = false }: ModelProps) {
-  const { scene } = useGLTF('/model.glb')
+  const { scene } = useGLTF(MODEL_URL)
   const ref = useRef<THREE.Group>(null)
   const t = useRef(0)
 
@@ -30,4 +34,4 @@ export function Model({ isTalking = false }: ModelProps) {
   return <primitive ref={ref} object={scene} />
 }
 
-useGLTF.preload('/model.glb')
+useGLTF.preload(MODEL_URL)
