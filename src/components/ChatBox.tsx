@@ -2,15 +2,22 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send } from 'lucide-react'
 
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+}
+
 interface ChatBoxProps {
   onTalkingChange?: (talking: boolean) => void
   onAssistantMessage?: (message: string) => void
+  onSend?: () => void
 }
 
-export function ChatBox({ onTalkingChange, onAssistantMessage }: ChatBoxProps) {
+export function ChatBox({ onTalkingChange, onAssistantMessage, onSend }: ChatBoxProps) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [hasSentOnce, setHasSentOnce] = useState(false)
 
   useEffect(() => {
     return () => {
@@ -18,10 +25,10 @@ export function ChatBox({ onTalkingChange, onAssistantMessage }: ChatBoxProps) {
     }
   }, [])
 
-  const [hasSentOnce, setHasSentOnce] = useState(false)
-
   const sendMessage = async () => {
     if (!input.trim() || loading) return
+
+    onSend?.()  // ← triggers smooth camera reset
 
     setInput('')
     setLoading(true)
@@ -29,16 +36,15 @@ export function ChatBox({ onTalkingChange, onAssistantMessage }: ChatBoxProps) {
 
     if (timerRef.current) clearTimeout(timerRef.current)
 
-    // only show "..." if a previous reply already exists
     if (hasSentOnce) {
       onAssistantMessage?.('...')
     }
 
-    // Replace with your actual API call
     setTimeout(() => {
-      const reply = 'This is a response from the assistant.'
+      const reply = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+
       onAssistantMessage?.(reply)
-      setHasSentOnce(true)  // mark that at least one reply has been shown
+      setHasSentOnce(true)
       setLoading(false)
       onTalkingChange?.(false)
 
