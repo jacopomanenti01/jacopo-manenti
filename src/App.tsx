@@ -9,6 +9,11 @@ import { useState, useEffect, useRef } from 'react'
 
 const CAMERA_DISTANCE = 5
 
+const ENV_URL = window.location.hostname === 'localhost'
+  ? '//background.hdr'
+  : '/jacopo-manenti//background.hdr'
+
+
 function Scene({ isTalking, bubbleMessage, bubbleVisible, onBubbleClose, initialDistance, shouldReset, onResetDone }: {
   isTalking: boolean
   bubbleMessage: string
@@ -46,7 +51,7 @@ function Scene({ isTalking, bubbleMessage, bubbleVisible, onBubbleClose, initial
     <>
       <Environment
         background
-        files="/background.hdr"
+        files={ENV_URL}
         backgroundBlurriness={0.3}
       />
       <Stage adjustCamera={false} intensity={0.5}>
@@ -110,8 +115,8 @@ export default function App() {
 
       {/* Chat section — fixed height bar at the bottom */}
       <div style={{
-        height: '80px',           // ← tune this
-        background: '#0a0a0a',    // ← tune this color
+        height: '80px',           
+        background: '#0a0a0a',    
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
