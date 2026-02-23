@@ -1,5 +1,6 @@
 // src/components/SpeechBubble.tsx
 import { Html } from '@react-three/drei'
+import { useThree } from '@react-three/fiber'
 import { useState, useEffect } from 'react'
 
 interface SpeechBubbleProps {
@@ -18,26 +19,26 @@ function useIsMobile(breakpoint = 768) {
   return isMobile
 }
 
-function getBubblePosition(): [number, number, number] {
-  const w = window.innerWidth
-  if (w > 1024) return [0.6, 1, 0]
-  if (w > 768)  return [-0.4, 0.1, 0]
-  return [-0.7, -0.1, 0]
-}
-
 function getBubbleWidth(): string {
   const w = window.innerWidth
-  if (w > 1024) return '400px'
-  if (w > 768)  return '400px'
-  return '350px'
+  if (w > 1024) return `${Math.round(w * 0.35)}px`
+  if (w > 768)  return `${Math.round(w * 0.5)}px`
+  return `${Math.round(w * 0.55)}px`
 }
 
 const MAX_CHARS = 300
 
 export function SpeechBubble({ message, visible, onClose }: SpeechBubbleProps) {
   const isMobile = useIsMobile()
-  const position = getBubblePosition()
   const width = getBubbleWidth()
+  const { viewport } = useThree()
+
+  const position: [number, number, number] = (() => {
+    const w = window.innerWidth
+    if (w > 1024) return [viewport.width * 0.28,  viewport.height * 0.15, 0]
+    return             [viewport.width * -0.0,  -viewport.height * 0.05, 0]
+  })()
+
   const isTailUp = position[1] < 0
   const isTailLeft = !isTailUp
 
@@ -60,8 +61,10 @@ export function SpeechBubble({ message, visible, onClose }: SpeechBubbleProps) {
           lineHeight: '1.5',
           color: '#111',
           width,
+          transform: 'translateX(-50%)',  // ← expands equally left and right
           maxHeight: message.length > MAX_CHARS ? '180px' : 'none',
           overflowY: message.length > MAX_CHARS ? 'auto' : 'visible',
+          overscrollBehavior: 'contain',
           whiteSpace: 'normal',
           pointerEvents: 'auto',
           scrollbarWidth: 'thin',

@@ -1,13 +1,13 @@
 // src/App.tsx
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Stage } from '@react-three/drei'
+import { OrbitControls, Stage, Environment } from '@react-three/drei'
 import { Model } from './components/ThreeModel'
 import { Navbar } from './components/Navbar'
 import { ChatBox } from './components/ChatBox'
 import { SpeechBubble } from './components/SpeechBubble'
 import { useState, useEffect, useRef } from 'react'
 
-const CAMERA_DISTANCE = 5  // ← change this to adjust starting zoom
+const CAMERA_DISTANCE = 5
 
 function Scene({ isTalking, bubbleMessage, bubbleVisible, onBubbleClose, initialDistance, shouldReset, onResetDone }: {
   isTalking: boolean
@@ -29,22 +29,27 @@ function Scene({ isTalking, bubbleMessage, bubbleVisible, onBubbleClose, initial
   }, [shouldReset])
 
   useFrame(() => {
-      if (!isLerping.current || !controlsRef.current) return
-      const controls = controlsRef.current
-      const current = controls.getDistance()
-      const target = initialDistance
-      const newDist = current + (target - current) * 0.12  // ← was 0.05
-      controls.target.lerp({ x: 0, y: 0, z: 0 }, 0.12)   // ← was 0.05
-      controls.object.position.lerp({ x: 0, y: 1, z: newDist }, 0.12)  // ← was 0.05
-      controls.update()
-      if (Math.abs(newDist - target) < 0.01) {
-        isLerping.current = false
-      }
-    })
+    if (!isLerping.current || !controlsRef.current) return
+    const controls = controlsRef.current
+    const current = controls.getDistance()
+    const target = initialDistance
+    const newDist = current + (target - current) * 0.12
+    controls.target.lerp({ x: 0, y: 0, z: 0 }, 0.12)
+    controls.object.position.lerp({ x: 0, y: 1, z: newDist }, 0.12)
+    controls.update()
+    if (Math.abs(newDist - target) < 0.01) {
+      isLerping.current = false
+    }
+  })
 
   return (
     <>
-      <Stage adjustCamera={false} environment="city" intensity={0.5}>
+      <Environment
+        background
+        files="/background.hdr"
+        backgroundBlurriness={0.3}
+      />
+      <Stage adjustCamera={false} intensity={0.5}>
         <Model isTalking={isTalking} />
       </Stage>
       <OrbitControls
@@ -81,28 +86,45 @@ export default function App() {
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+
+      {/* Navbar */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
         <Navbar />
       </div>
 
-      <Canvas camera={{ position: [0, 0, cameraDistance], fov: 40 }}>
-        <Scene
-          isTalking={isTalking}
-          bubbleMessage={bubbleMessage}
-          bubbleVisible={bubbleVisible}
-          onBubbleClose={() => setBubbleVisible(false)}
-          initialDistance={cameraDistance}
-          shouldReset={shouldReset}
-          onResetDone={() => setShouldReset(false)}
-        />
-      </Canvas>
+      {/* 3D scene — takes remaining space */}
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        <Canvas camera={{ position: [0, 0, cameraDistance], fov: 40 }}>
+          <Scene
+            isTalking={isTalking}
+            bubbleMessage={bubbleMessage}
+            bubbleVisible={bubbleVisible}
+            onBubbleClose={() => setBubbleVisible(false)}
+            initialDistance={cameraDistance}
+            shouldReset={shouldReset}
+            onResetDone={() => setShouldReset(false)}
+          />
+        </Canvas>
+      </div>
 
-      <ChatBox
-        onTalkingChange={setIsTalking}
-        onAssistantMessage={handleAssistantMessage}
-        onSend={() => setShouldReset(true)}
-      />
+      {/* Chat section — fixed height bar at the bottom */}
+      <div style={{
+        height: '80px',           // ← tune this
+        background: '#0a0a0a',    // ← tune this color
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 20px',
+        flexShrink: 0,
+      }}>
+        <ChatBox
+          onTalkingChange={setIsTalking}
+          onAssistantMessage={handleAssistantMessage}
+          onSend={() => setShouldReset(true)}
+        />
+      </div>
+
     </div>
   )
 }

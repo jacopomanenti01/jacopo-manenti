@@ -28,7 +28,7 @@ export function ChatBox({ onTalkingChange, onAssistantMessage, onSend }: ChatBox
   const sendMessage = async () => {
     if (!input.trim() || loading) return
 
-    onSend?.()  // ← triggers smooth camera reset
+    onSend?.() 
 
     setInput('')
     setLoading(true)
